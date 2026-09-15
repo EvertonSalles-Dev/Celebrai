@@ -1,0 +1,90 @@
+# ============================================================================
+# Celebrai — configuração de deploy no Render
+# ============================================================================
+# Serviços:
+#   - celebrai-api: API Fastify (Dockerfile em packages/api/Dockerfile)
+#   - celebrai-web: Frontend React + Nginx (Dockerfile em packages/web/Dockerfile)
+#
+# Para fazer deploy:
+# 1. Conecte este repositório à conta do Render
+# 2. Crie um "Web Service" apontando para este repositório
+# 3. Configure as variáveis de ambiente (veja RENDER_ENV_VARS.md)
+# 4. Crie um PostgreSQL gerenciado separadamente (Render Dashboard > Databases)
+# ============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # API — Fastify + Prisma + PostgreSQL
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: celebrai-api
+    region: us-east1
+    plan: Starter
+    env: docker
+    domain: celebrai-api.onrender.com
+    
+    build:
+      dockerfile: packages/api/Dockerfile
+      context: .
+    
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3333"
+      - key: DATABASE_PROVIDER
+        value: postgresql
+      - key: DATABASE_URL
+        sync: false  # DEFINIR manualmente no Render Dashboard
+      - key: APP_URL
+        value: https://celebrai.app
+      - key: API_URL
+        value: https://celebrai-api.onrender.com
+      - key: CORS_ORIGINS
+        value: https://celebrai.app,https://www.celebrai.app
+      - key: JWT_ACCESS_SECRET
+        sync: false  # DEFINIR manualmente
+      - key: JWT_REFRESH_SECRET
+        sync: false  # DEFINIR manualmente
+      - key: INVITATION_TOKEN_SECRET
+        sync: false  # DEFINIR manualmente
+      - key: MAIL_DRIVER
+        value: disabled
+      - key: WHATSAPP_DRIVER
+        value: disabled
+      - key: SEED_SUPER_ADMIN_EMAIL
+        value: super@celebrai.app
+      - key: SEED_SUPER_ADMIN_PASSWORD
+        sync: false  # DEFINIR manualmente
+    
+    healthCheckPath: /api/health
+    
+    autoDeploy: true
+    
+    workingDirectory: packages/api
+
+  # ---------------------------------------------------------------------------
+  # Web — Frontend React + Nginx
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: celebrai-web
+    region: us-east1
+    plan: Starter
+    env: docker
+    domain: celebrai.app
+    
+    build:
+      dockerfile: packages/web/Dockerfile
+      context: .
+    
+    envVars:
+      - key: VITE_API_URL
+        value: ""  # vazio = usa same-origin (proxy do Nginx)
+      - key: API_UPSTREAM
+        value: celebrai-api.onrender.com:3333
+      - key: NGINX_RESOLVER
+        value: 8.8.8.8 1.1.1.1
+    
+    autoDeploy: true
+    
+    workingDirectory: packages/web

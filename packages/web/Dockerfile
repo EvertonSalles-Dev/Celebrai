@@ -28,8 +28,14 @@ RUN npx tsc --noEmit && npx vite build
 # ---------------------------------------------------------------------------
 FROM nginx:1.27-alpine AS runtime
 
+# Instala envsubst para substituir variáveis no template
+RUN apk add --no-cache bash
+
 # Configuração própria: SPA fallback, cache de assets, gzip e headers de segurança.
-COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf
+# Usamos o template para permitir configuração dinâmica via variáveis de ambiente.
+COPY packages/web/nginx.conf.template /etc/nginx/conf.d/default.conf.template
+COPY packages/web/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 COPY --from=build /app/packages/web/dist /usr/share/nginx/html
 
@@ -38,4 +44,4 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]

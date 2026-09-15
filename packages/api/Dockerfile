@@ -68,12 +68,17 @@ COPY packages/api/prisma ./packages/api/prisma
 COPY packages/api/package.json ./packages/api/package.json
 COPY package.json ./
 
-# Remove dependências de desenvolvimento após o build.
-RUN npm prune --omit=dev --workspace @celebrai/api --include-workspace-root
+# Remove dependências de desenvolvimento, mas mantém o prisma (necessário para migrations)
+RUN npm prune --omit=dev --workspace @celebrai/api --include-workspace-root && \
+    npm install --no-save --workspace @celebrai/api prisma@^5.22.0 @prisma/client@^5.22.0
 
 USER celebrai
 
 WORKDIR /app/packages/api
+
+# Copia o entrypoint script
+COPY packages/api/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 3333
 
@@ -81,5 +86,4 @@ EXPOSE 3333
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3333/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "dist/server.js"]
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
