@@ -186,7 +186,7 @@ export function InvitationsPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Convites</h1>
           <p className="mt-1 text-sm text-ink-500">
@@ -234,11 +234,10 @@ export function InvitationsPage() {
               setStatusFilter(value);
               setSelected(new Set());
             }}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              statusFilter === value
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${statusFilter === value
                 ? 'bg-ink-900 text-white'
                 : 'bg-white text-ink-600 hover:bg-ink-100'
-            }`}
+              }`}
           >
             {label}
           </button>
@@ -498,11 +497,10 @@ export function InvitationsPage() {
             ).map((option) => (
               <label
                 key={option.value}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-                  channel === option.value
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${channel === option.value
                     ? 'border-ink-900 bg-ink-50'
                     : 'border-ink-200 hover:bg-ink-50'
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -682,11 +680,10 @@ function RowAction({
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={`rounded-lg p-1.5 transition-colors ${
-        danger
+      className={`rounded-lg p-1.5 transition-colors ${danger
           ? 'text-ink-400 hover:bg-danger-50 hover:text-danger-600'
           : 'text-ink-400 hover:bg-ink-100 hover:text-ink-700'
-      }`}
+        }`}
     >
       {icon}
     </button>
